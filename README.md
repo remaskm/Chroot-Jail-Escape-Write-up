@@ -29,7 +29,7 @@ A chroot jail is fundamentally a directory that acts as a new root for any proce
 With the chroot directory established, a minimal operating system is installed into it using the `debootstrap` utility. This command installs the base Kali environment, confining it to `/var/chroot`.
 
 ```bash
-sudo debootstrap --variant=minbase kali-rolling /var/chroot http://http.kali.org/kali
+sudo debootstrap --variant=minbase kali-rolling /var/chroot http://kali.download/kali
 ```
 
 The rationale for using the `minbase` variant is that it provides the smallest viable filesystem possible, which actively prevents unnecessary tools from being included inside the jail. This approach demonstrates a critical concept: even a minimal system, if it contains a single misplaced SUID binary, is enough to allow an attacker to destroy the security of the entire environment. This step essentially installs a full, though minimal, Linux base operating system inside the `/var/chroot` directory structure.
