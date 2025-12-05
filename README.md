@@ -87,9 +87,9 @@ As a result of this action, each of these tools will now run with the **effectiv
 To simulate the flag collection goals of the original web challenge, three flags are created in the jailed root user's home directory.
 
 ```bash
-echo "FLAG-WRITEABLE-PASSWD-2025" > /root/flag_etc.txt
-echo "FLAG-SUID-DASH-2025"         > /root/flag2.txt
-echo "FLAG-SUID-FIND-2025"         > /root/flag3.txt
+echo "FLAG-SUID-BASH-2025" > /root/flag_bash.txt
+echo "FLAG-SUID-DASH-2025" > /root/flag_dash.txt
+echo "FLAG-SUID-FIND-2025" > /root/flag_find.txt
 chmod 600 /root/flag*
 exit
 ```
