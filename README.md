@@ -1,10 +1,10 @@
 # **Chroot Jail Escape Write-up - December 2025**
 
-Remas Khaled Mohamed 
+**Remas Khaled Mohamed**
 
-Sama Amr Said
+**Sama Amr Said**
 
-Basmala Nabil El-Sayed
+**Basmala Nabil El-Sayed**
 
 ---
 
