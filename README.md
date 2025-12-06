@@ -1,4 +1,6 @@
-# **Chroot Jail Escape Write-up - December 2025**
+# **Chroot Jail Escape Write-up**
+
+**December 2025**
 
 **Remas Khaled Mohamed**
 
