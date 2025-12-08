@@ -1,16 +1,24 @@
 # **Chroot Jail Escape Write-up**
 
-**Remas Khaled Mohamed**
-
-**Sama Amr Said**
-
-**Basmala Nabil El-Sayed**
+**Remas Khaled Mohamed** . **Sama Amr Said** . **Basmala Nabil El-Sayed**
 
 ---
 
 # Goal
 
 The goal is to build a restricted enviroment where the user starts as an intentionally low-privilege user, who is already locked inside a chroot jail. The enviroment is multifaceted and designed to mirror real-world privilege escalation cases where a developer or sysadmin misunderstands what the chroot function actually protects. The steps required to escape the jail are to first perform a thorough enumeration to discover the three planted SUID misconfigurations, then to exploit each of these misconfigurations to escalate privileges to the root user. Once root is achieved, the goal is to capture all the root-level flags, and finally to perform realistic chroot escape to break out of the jailed environment and into the real host filesystem.
+
+---
+[![Play Interactive Lab](https://img.shields.io/badge/Play-Interactive_Lab-8b5cf6?style=for-the-badge&logo=html5&logoColor=white)](https://htmlpreview.github.io/?https://github.com/remaskm/Chroot-Jail-Escape-Write-up/blob/main/Chroot%20Escape%20Academy.html)
+[![View Slides](https://img.shields.io/badge/View-16_Slides-success?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://github.com/remaskm/Chroot-Jail-Escape-Write-up/blob/main/Chroot%20Jail%20Escape%20slides.pdf)
+[![Download PDF](https://img.shields.io/badge/Download-PDF-red?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://github.com/remaskm/Chroot-Jail-Escape-Write-up/raw/main/Chroot%20Jail%20Escape%20slides.pdf)
+
+### One-Click Access
+→ **Interactive Lab Platform **  
+https://htmlpreview.github.io/?https://github.com/remaskm/Chroot-Jail-Escape-Write-up/blob/main/Chroot%20Escape%20Academy.html
+
+→ **Slide Presentation **  
+https://github.com/remaskm/Chroot-Jail-Escape-Write-up/blob/main/Chroot%20Jail%20Escape%20slides.pdf
 
 ---
 
