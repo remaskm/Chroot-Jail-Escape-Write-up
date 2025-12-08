@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chroot Escape Academy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; }
+        .screen { min-height: 100vh; padding: 1.5rem; display: none; }
+        .screen.active { display: flex; }
+        .menu-screen { background: linear-gradient(135deg, #1e293b 0%, #581c87 50%, #1e293b 100%); align-items: center; justify-content: center; }
+        .tutorial-screen { background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 50%, #1e293b 100%); }
+        .challenge-screen { background: linear-gradient(135deg, #1e293b 0%, #991b1b 50%, #1e293b 100%); }
+        .container { max-width: 72rem; width: 100%; margin: 0 auto; }
+        .card { background: #1e293b; border-radius: 1rem; padding: 2rem; border: 2px solid; transition: all 0.3s; }
+        .card:hover { transform: scale(1.03); }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+        @media (min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+        .grid-3 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+        h1 { font-size: 2.5rem; font-weight: bold; color: white; margin-bottom: 1rem; }
+        h2 { font-size: 1.5rem; font-weight: bold; color: white; margin-bottom: 1rem; }
+        .btn { padding: 0.75rem 2rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover:not(:disabled) { background: #2563eb; }
+        .btn-secondary { background: #475569; color: white; }
+        .btn-secondary:hover:not(:disabled) { background: #334155; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+        .progress-bar { width: 100%; height: 0.5rem; background: #475569; border-radius: 9999px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #3b82f6; transition: width 0.5s; }
+        input[type="text"] { flex: 1; background: #0f172a; color: white; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid #475569; font-family: monospace; font-size: 1rem; }
+        input[type="text"]:focus { outline: none; border-color: #dc2626; }
+        .command-box { background: #0f172a; border-radius: 0.5rem; padding: 1rem; border: 1px solid #334155; margin: 1.5rem 0; }
+        .detail-item { background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; display: flex; gap: 0.75rem; }
+        .text-center { text-align: center; }
+        .text-blue { color: #60a5fa; }
+        .text-red { color: #f87171; }
+        .text-green { color: #4ade80; }
+        .text-yellow { color: #fbbf24; }
+        .text-gray { color: #9ca3af; }
+        .text-white { color: white; }
+        .border-blue { border-color: rgba(59, 130, 246, 0.5); }
+        .border-red { border-color: rgba(220, 38, 38, 0.5); }
+        .border-green { border-color: rgba(34, 197, 94, 0.5); }
+        .flex { display: flex; }
+        .flex-between { justify-content: space-between; }
+        .flex-center { align-items: center; }
+        .gap-3 { gap: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .link-btn { background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0; font-size: 0.875rem; }
+        .link-btn:hover { color: white; }
+        .checklist { list-style: none; margin-top: 1rem; }
+        .checklist li { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; color: #9ca3af; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+    <div class="screen menu-screen active" id="menuScreen">
+        <div class="container">
+            <div class="text-center mb-6">
+                <div style="font-size: 5rem; margin-bottom: 1rem;">💻</div>
+                <h1>Chroot Escape Academy</h1>
+                <p style="font-size: 1.25rem; color: #d1d5db;">Master privilege escalation techniques</p>
+            </div>
+            <div class="grid-2">
+                <div class="card border-blue" style="cursor: pointer;" onclick="startTutorial()">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                    <h2>Tutorial Mode</h2>
+                    <p class="text-gray mb-4">Learn how vulnerabilities work, why they exist, and how to exploit them step by step.</p>
+                    <ul class="checklist">
+                        <li>✓ Interactive explanations</li>
+                        <li>✓ Step-by-step walkthroughs</li>
+                        <li>✓ Real-world context</li>
+                    </ul>
+                </div>
+                <div class="card border-red" style="cursor: pointer;" onclick="startChallenge()">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                    <h2>Challenge Lab</h2>
+                    <p class="text-gray mb-4">Apply what you learned in a hands-on CTF environment. Find flags in your VM!</p>
+                    <ul class="checklist">
+                        <li>✓ 3 real vulnerabilities</li>
+                        <li>✓ Progressive difficulty</li>
+                        <li>✓ Timed challenges</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center text-gray" style="font-size: 0.875rem;">
+                <p>💡 Tip: Complete the tutorial first if you're new to privilege escalation</p>
+            </div>
+        </div>
+    </div>
+    <div class="screen tutorial-screen" id="tutorialScreen">
+        <div class="container">
+            <div class="mb-6">
+                <div class="flex flex-between mb-4" style="font-size: 0.875rem; color: #9ca3af;">
+                    <button class="link-btn" onclick="backToMenu()">← Back to Menu</button>
+                    <span id="tutorialProgress">Step 1 of 14</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="tutorialProgressBar" style="width: 7%;"></div>
+                </div>
+            </div>
+            <div class="card" style="border: 1px solid rgba(59, 130, 246, 0.3);" id="tutorialContent"></div>
+            <div class="flex flex-between mt-6">
+                <button class="btn btn-secondary" id="prevBtn" onclick="prevTutorial()">Previous</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextTutorial()">
+                    <span id="nextBtnText">Next</span>
+                    <span>→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="screen challenge-screen" id="challengeScreen">
+        <div class="container">
+            <div class="card border-red mb-6">
+                <div class="flex flex-between flex-center mb-4">
+                    <div class="flex flex-center" style="gap: 1rem;">
+                        <button class="link-btn" onclick="backToMenu()">← Menu</button>
+                        <div>
+                            <h2 style="margin: 0;">Challenge Lab</h2>
+                            <p class="text-gray" id="challengeLevelText" style="margin: 0;">Level 1 of 3</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 1.875rem; font-family: monospace; color: #f87171;" id="timerDisplay">00:00</div>
+                        <div style="font-size: 0.875rem; color: #9ca3af;">Time Elapsed</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex flex-between mb-4" style="font-size: 0.875rem; color: #9ca3af;">
+                        <span>Progress</span>
+                        <span id="flagsCount">0/3 Flags</span>
+                    </div>
+                    <div class="progress-bar" style="height: 1rem;">
+                        <div class="progress-fill" id="challengeProgress" style="width: 0%; background: linear-gradient(to right, #ef4444, #f97316);"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-3 mb-6" id="challengeCards"></div>
+            <div class="card border-red" id="inputSection">
+                <h2 class="mb-4">Submit Flag for Level <span id="currentLevel">1</span></h2>
+                <div class="flex gap-3 mb-4">
+                    <input type="text" id="flagInput" placeholder="FLAG-XXXX-XXXX-2025" onkeypress="if(event.key==='Enter') submitFlag()" />
+                    <button class="btn btn-danger" onclick="submitFlag()">Submit</button>
+                </div>
+                <button class="link-btn text-red" onclick="toggleHints()">
+                    <span id="hintToggleText">Show Hints</span>
+                </button>
+                <div id="hintBox" style="display: none; margin-top: 1rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(220, 38, 38, 0.3);">
+                    <p class="text-red" style="font-weight: 600; margin-bottom: 0.5rem;">Hints:</p>
+                    <ul id="hintList" style="list-style: none;"></ul>
+                </div>
+            </div>
+            <div id="victoryBox" style="display: none; background: linear-gradient(to right, rgba(20, 83, 45, 0.5), rgba(113, 63, 18, 0.5)); border-radius: 1rem; padding: 2rem; border: 2px solid rgba(34, 197, 94, 0.5); text-align: center; margin-top: 1.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
+                <h1 style="font-size: 1.875rem; margin-bottom: 1rem;">🎉 All Flags Captured! 🎉</h1>
+                <p class="text-gray mb-6">You've successfully escaped the chroot jail!</p>
+                <div style="background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; padding: 1rem; display: inline-block;">
+                    <p class="text-green" style="font-weight: 600;">Completion Time</p>
+                    <p style="font-size: 1.875rem; font-family: monospace; color: white;" id="finalTime">00:00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let tutorialStep = 0;
+        let challengeLevel = 1;
+        let challengeFlags = { flag1: false, flag2: false, flag3: false };
+        let timer = 0;
+        let timerInterval = null;
+        let showHintsState = false;
+        const correctFlags = {
+            flag1: 'FLAG-SUID-BASH-2025',
+            flag2: 'FLAG-SUID-DASH-2025',
+            flag3: 'FLAG-SUID-FIND-2025'
+        };
+        const tutorialContent = [
+            { title: "Welcome to Chroot Jail Security", content: "A chroot jail isolates processes by changing their root directory. But misconfigurations can allow 'escape' to gain root access. Let's learn how!", details: [] },
+            
+            // Vulnerability 1: SUID Bash (keeps original)
+            { title: "Vulnerability 1: SUID Bash", content: "SUID (Set User ID) allows a program to run with the owner's privileges, typically root.", details: ["When a binary has SUID bit set (rwsr-xr-x), it executes as the file owner", "Example: /usr/bin/passwd needs SUID to modify /etc/shadow as root", "Danger: If bash has SUID, ANY user can get a root shell!"] },
+            { title: "Why Does This Happen?", content: "Admins sometimes set SUID to 'fix' permission issues in scripts without understanding the security implications.", details: ["Admin thinks: 'My script needs root access, I'll chmod u+s /bin/bash'", "Result: Every user can now run bash as root", "Real-world: Legacy systems, quick fixes, incomplete training"] },
+            { title: "How to Find SUID Binaries", content: "Enumeration is key. Here's how to search:", command: "find / -perm -u=s -type f 2>/dev/null", details: ["-perm -u=s: Find files with SUID bit set", "-type f: Only files (not directories)", "2>/dev/null: Hide permission errors"] },
+            { title: "Exploitation: SUID Bash", content: "Once found, exploit it carefully:", command: "/bin/bash -p", details: ["Run bash with -p flag (preserve privileges)", "The SUID bit makes bash run as root", "-p prevents bash from dropping privileges", "Result: root shell → read /root/flag_bash.txt"] },
+            
+            // Vulnerability 2: SUID Dash (NEW!)
+            { title: "Vulnerability 2: SUID Dash Shell", content: "Dash is a lightweight POSIX shell. Like bash, if dash has SUID, it can be exploited for privilege escalation.", details: ["Dash is faster and smaller than bash", "Often used for /bin/sh on Debian systems", "SUID dash = root shell access", "Similar to bash but different binary"] },
+            { title: "Why Dash Instead of Bash?", content: "Some systems use dash for scripting performance, but admins may misconfigure it.", details: ["Dash used for /bin/sh compatibility", "Admin sets SUID on dash for script automation", "Forgets dash can also spawn interactive shells", "Less commonly known than bash exploitation"] },
+            { title: "Finding SUID Dash", content: "Search specifically for SUID shell binaries:", command: "find / -perm -u=s -type f 2>/dev/null | grep -E 'dash|sh'\nls -la /bin/dash", details: ["Look for dash in SUID results", "Check /bin/dash specifically", "Look for rwsr-xr-x permissions", "Dash is often overlooked compared to bash"] },
+            { title: "Exploitation: SUID Dash", content: "Execute dash with -p flag to preserve privileges:", command: "/bin/dash -p\nwhoami\n# root\ncat /root/flag_dash.txt", details: ["Run dash with -p flag", "Similar to bash exploitation", "Spawns privileged shell as root", "Read flag from /root/flag_dash.txt"] },
+            
+            // Vulnerability 3: SUID Find (NEW!)
+            { title: "Vulnerability 3: SUID Find Binary", content: "The find command with SUID can execute arbitrary commands as root using -exec flag.", details: ["find is used to search for files", "-exec allows running commands on found files", "SUID find = command execution as root", "GTFOBins lists this as privilege escalation"] },
+            { title: "Why Find with SUID?", content: "Admins may set SUID on find for automated file operations, not realizing the danger.", details: ["Admin needs find to access all files for backups", "Sets SUID: chmod u+s /usr/bin/find", "Doesn't realize -exec executes commands as root", "Common in automation scripts"] },
+            { title: "Finding SUID Find", content: "Search for find binary with SUID:", command: "find / -perm -u=s -type f 2>/dev/null | grep find\nls -la /usr/bin/find", details: ["Search all SUID binaries", "Filter for 'find' in results", "Check /usr/bin/find permissions", "Look for rwsr-xr-x pattern"] },
+            { title: "Exploitation: SUID Find with -exec", content: "Use find's -exec to spawn a root shell:", command: "/usr/bin/find . -exec /bin/bash -p \\; -quit\ncat /root/flag_find.txt", details: ["find searches current directory", "-exec runs command on results", "/bin/bash -p spawns privileged shell", "-quit stops after first execution", "Immediate root access"] },
+            
+            { title: "Key Takeaways", content: "Security principles you've learned:", details: ["Always enumerate: search for SUID binaries systematically", "Multiple shells can be exploited: bash, dash, sh", "Powerful utilities like find are dangerous with SUID", "Defense: Audit SUID regularly, use capabilities instead", "GTFOBins is your friend for exploitation techniques"] }
+        ];
+        
+        const challengeHints = {
+            1: ['Search for SUID binaries with find', 'Check /bin/bash permissions', 'Use the -p flag with bash', 'Flag is in /root/flag_bash.txt'],
+            2: ['Look for SUID dash binary in /bin/', 'Use find to search for SUID shells', 'Execute /bin/dash with -p flag', 'Flag is in /root/flag_dash.txt'],
+            3: ['Search for SUID find binary', 'Check /usr/bin/find permissions', 'Use find with -exec /bin/bash -p', 'Add -quit flag to stop after execution', 'Flag is in /root/flag_find.txt']
+        };
+        
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+        function backToMenu() {
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            showScreen('menuScreen');
+        }
+        function startTutorial() {
+            tutorialStep = 0;
+            showScreen('tutorialScreen');
+            renderTutorial();
+        }
+        function startChallenge() {
+            challengeLevel = 1;
+            challengeFlags = { flag1: false, flag2: false, flag3: false };
+            timer = 0;
+            showHintsState = false;
+            showScreen('challengeScreen');
+            startTimer();
+            renderChallenge();
+        }
+        function renderTutorial() {
+            const current = tutorialContent[tutorialStep];
+            const progress = ((tutorialStep + 1) / tutorialContent.length) * 100;
+            document.getElementById('tutorialProgress').textContent = `Step ${tutorialStep + 1} of ${tutorialContent.length}`;
+            document.getElementById('tutorialProgressBar').style.width = progress + '%';
+            let html = `<h1 style="font-size: 1.875rem; margin-bottom: 1rem;">${current.title}</h1>`;
+            html += `<p style="font-size: 1.125rem; color: #d1d5db; margin-bottom: 1.5rem;">${current.content}</p>`;
+            if (current.command) {
+                html += `<div class="command-box"><div style="color: #4ade80; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600;">Command:</div><pre style="color: #d1d5db; font-family: monospace; font-size: 0.875rem; white-space: pre-wrap;">${current.command}</pre></div>`;
+            }
+            if (current.details && current.details.length > 0) {
+                current.details.forEach((detail, idx) => {
+                    html += `<div class="detail-item"><div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><span style="color: #60a5fa; font-size: 0.875rem; font-weight: bold;">${idx + 1}</span></div><p style="color: #d1d5db; flex: 1;">${detail}</p></div>`;
+                });
+            }
+            document.getElementById('tutorialContent').innerHTML = html;
+            document.getElementById('prevBtn').disabled = tutorialStep === 0;
+            document.getElementById('nextBtnText').textContent = tutorialStep === tutorialContent.length - 1 ? 'Finish Tutorial' : 'Next';
+        }
+        function prevTutorial() {
+            if (tutorialStep > 0) { tutorialStep--; renderTutorial(); }
+        }
+        function nextTutorial() {
+            if (tutorialStep < tutorialContent.length - 1) { tutorialStep++; renderTutorial(); } else { backToMenu(); }
+        }
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => { timer++; updateTimer(); }, 1000);
+        }
+        function updateTimer() {
+            const mins = Math.floor(timer / 60);
+            const secs = timer % 60;
+            document.getElementById('timerDisplay').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        function renderChallenge() {
+            document.getElementById('challengeLevelText').textContent = `Level ${challengeLevel} of 3`;
+            document.getElementById('currentLevel').textContent = challengeLevel;
+            const completedCount = Object.values(challengeFlags).filter(Boolean).length;
+            document.getElementById('flagsCount').textContent = `${completedCount}/3 Flags`;
+            document.getElementById('challengeProgress').style.width = (completedCount / 3 * 100) + '%';
+            const names = ['SUID Bash', 'SUID Dash', 'SUID Find'];
+            let cardsHTML = '';
+            for (let i = 1; i <= 3; i++) {
+                const isCompleted = challengeFlags['flag' + i];
+                const isCurrent = i === challengeLevel && !isCompleted;
+                const borderClass = isCompleted ? 'border-green' : isCurrent ? 'border-red' : '';
+                const opacity = !isCompleted && !isCurrent ? 'opacity: 0.5;' : '';
+                cardsHTML += `<div class="card ${borderClass}" style="${opacity}"><div class="flex flex-between mb-4"><h2 style="font-size: 1.25rem; margin: 0;">Level ${i}</h2><span style="font-size: 1.5rem;">${isCompleted ? '🔓' : '🔒'}</span></div><p class="text-gray mb-4">${names[i-1]}</p>`;
+                if (isCompleted) {
+                    cardsHTML += `<div style="background: rgba(5, 46, 22, 0.3); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(34, 197, 94, 0.3);"><div class="text-green" style="font-weight: 600; margin-bottom: 0.5rem;">✓ CAPTURED</div><p style="font-family: monospace; font-size: 0.75rem; color: #d1d5db; word-break: break-all;">${correctFlags['flag' + i]}</p></div>`;
+                } else if (isCurrent) {
+                    cardsHTML += `<div style="background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(220, 38, 38, 0.3);"><div style="font-size: 2rem; margin-bottom: 0.5rem;">🚩</div><p class="text-gray" style="font-size: 0.875rem;">Exploit in VM to find flag</p></div>`;
+                } else {
+                    cardsHTML += `<div style="background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; padding: 1rem;"><p class="text-gray" style="font-size: 0.875rem;">Locked</p></div>`;
+                }
+                cardsHTML += '</div>';
+            }
+            document.getElementById('challengeCards').innerHTML = cardsHTML;
+            if (completedCount === 3) {
+                document.getElementById('inputSection').style.display = 'none';
+                document.getElementById('victoryBox').style.display = 'block';
+                const mins = Math.floor(timer / 60);
+                const secs = timer % 60;
+                document.getElementById('finalTime').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            } else {
+                document.getElementById('inputSection').style.display = 'block';
+                document.getElementById('victoryBox').style.display = 'none';
+            }
+        }
+        function submitFlag() {
+            const input = document.getElementById('flagInput').value.trim();
+            const flagKey = 'flag' + challengeLevel;
+            if (input === correctFlags[flagKey]) {
+                challengeFlags[flagKey] = true;
+                document.getElementById('flagInput').value = '';
+                showHintsState = false;
+                document.getElementById('hintBox').style.display = 'none';
+                document.getElementById('hintToggleText').textContent = 'Show Hints';
+                if (challengeLevel < 3) {
+                    setTimeout(() => { challengeLevel++; renderChallenge(); }, 1000);
+                } else {
+                    renderChallenge();
+                }
+            } else {
+                alert('Incorrect flag! Try again.');
+            }
+        }
+        function toggleHints() {
+            showHintsState = !showHintsState;
+            document.getElementById('hintBox').style.display = showHintsState ? 'block' : 'none';
+            document.getElementById('hintToggleText').textContent = showHintsState ? 'Hide Hints' : 'Show Hints';
+            if (showHintsState) {
+                const hints = challengeHints[challengeLevel];
+                let hintsHTML = '';
+                hints.forEach((hint, idx) => {
+                    hintsHTML += `<li style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; color: #d1d5db; font-size: 0.875rem;"><span class="text-red">${idx + 1}.</span><span>${hint}</span></li>`;
+                });
+                document.getElementById('hintList').innerHTML = hintsHTML;
+            }
+        }
+    </script>
+</body>
+</html>
