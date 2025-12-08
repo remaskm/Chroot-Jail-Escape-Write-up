@@ -13,7 +13,7 @@ The goal is to build a restricted enviroment where the user starts as an intenti
 [![Play Interactive Lab Platform](https://img.shields.io/badge/Play-Interactive_Lab-8b5cf6?style=for-the-badge&logo=html5&logoColor=white)](https://htmlpreview.github.io/?https://github.com/remaskm/Chroot-Jail-Escape-Write-up/blob/main/Chroot%20Escape%20Academy.html)
 
 
-[![View Slides](https://img.shields.io/badge/View-16_Slides-success?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://github.com/remaskm/Chroot-Jail-Escape-Write-up/blob/main/Chroot%20Jail%20Escape%20slides.pdf)
+[![View Slides](https://img.shields.io/badge/View-Presentation_Slides-success?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://github.com/remaskm/Chroot-Jail-Escape-Write-up/blob/main/Chroot%20Jail%20Escape%20slides.pdf)
 
 ---
 
