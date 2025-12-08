@@ -8,13 +8,13 @@
 
 ---
 
-# **Goal**
+# Goal
 
 The goal is to build a restricted enviroment where the user starts as an intentionally low-privilege user, who is already locked inside a chroot jail. The enviroment is multifaceted and designed to mirror real-world privilege escalation cases where a developer or sysadmin misunderstands what the chroot function actually protects. The steps required to escape the jail are to first perform a thorough enumeration to discover the three planted SUID misconfigurations, then to exploit each of these misconfigurations to escalate privileges to the root user. Once root is achieved, the goal is to capture all the root-level flags, and finally to perform realistic chroot escape to break out of the jailed environment and into the real host filesystem.
 
 ---
 
-# ** Live Demo **
+# Live Demo
 
 ## **1. Build Your Own Vulnerable Chroot Jail **
 
