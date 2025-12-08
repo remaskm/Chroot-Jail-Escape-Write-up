@@ -16,7 +16,7 @@ The goal is to build a restricted enviroment where the user starts as an intenti
 
 # Live Demo
 
-## **1. Build Your Own Vulnerable Chroot Jail **
+## 1. Build Your Own Vulnerable Chroot Jail
 
 To build the jail environment from scratch, you will need to perform all the steps on a system running **Kali Linux 2025.4 (rolling)** to ensure a modern and relevant testing environment.
 
