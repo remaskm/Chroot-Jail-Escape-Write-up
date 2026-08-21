@@ -1,8 +1,6 @@
 # **Chroot Jail Escape Write-up**
 
-**Remas Khaled Mohamed** . **Sama Amr Said** . **Basmala Nabil El-Sayed**
 
----
 
 # Goal
 
